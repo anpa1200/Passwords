@@ -11,8 +11,8 @@ def cool_script_open():
     ║                           Created by Andrey Pautov                          ║
     ║                            Email: 1200km@gmail.com                          ║
     ║─────────────────────────────────────────────────────────────────────────────║
-    ║   ⚠️  Please note: This tool may generate a very large password list        ║
-    ║   (ranging from 1GB to 30GB or more), depending on the input data.          ║
+    ║   ⚠️  Please note: This tool may generate a very large password list         ║
+    ║   (ranging from 1MB to 4TB or more), depending on the input data.           ║
     ║   The list contains many personalized password combinations, making it      ║
     ║   a powerful tool for security professionals.                               ║
     ║─────────────────────────────────────────────────────────────────────────────║
@@ -21,8 +21,21 @@ def cool_script_open():
     ║   - Variations using upper/lowercase, special characters, and numbers.      ║
     ║   - Smart combinations that strengthen the password list's complexity.      ║
     ║─────────────────────────────────────────────────────────────────────────────║
-    ║    💡  TIP: You can use this tool to test password security or to create     ║
-    ║    passwords tailored to your preferences and personal details.             ║
+    ║    💡  Critical Information on Resource Usage                               ║
+    ║When utilizing the Personal Pass Generator (PPG) with all functions enabled  ║
+    ║and with a complete set of input information, the process can be extremely   ║
+    ║resource-intensive. Generating comprehensive password lists based on extensive
+    ║input can result in very large data volumes, potentially occupying up to 4 TB║ 
+    ║of disk space. Moreover, the generation process can be significantly         ║ 
+    ║time-consuming due to the complexity and size of the data being processed.   ║
+    ║Recommendation for Efficient Use:                                            ║
+    ║To optimize the performance and manage the disk space efficiently,           ║
+    ║it is recommended to limit the input data to between 2 to 5 entries. This    ║
+    ║approach balances the comprehensiveness of the password lists with practical ║
+    ║resource usage, making the tool more manageable and effective for typical    ║
+    ║penetration testing scenarios.By focusing on a smaller set of highly relevant║
+    ║inputs, you can still achieve substantial password list coverage without     ║
+    ║overwhelming your system's storage and processing capabilities.              ║
     ╚═════════════════════════════════════════════════════════════════════════════╝
     """)
 
