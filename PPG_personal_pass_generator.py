@@ -234,18 +234,59 @@ def main():
     while mode1337 not in ['y', 'n']:
         print("Invalid input. Please enter 'y' for yes or 'n' for no.")
         mode1337 = input("Enable 1337 Leet mode? y/n: ").lower()
+
     # Step 2: Gather basic values from user input
     basic_values = gather_information()
     len_bv = len(basic_values)
+
     # Step 3: Generate passwords based on the basic and additional values
     add_symbols = input("Do you want to add additional symbols, like @pass#? y/n: ").lower()
     while add_symbols not in ['y', 'n']:
         print("Invalid input. Please enter 'y' for yes or 'n' for no.")
         add_symbols = input("Do you want to add additional symbols, like @pass#? y/n: ").lower()
 
+    # New Step: Set password length limits
+    min_len = int(input("Enter minimum password length (default is 4): "))
+    max_len = int(input("Enter maximum password length (default is 12): "))
+
+    # Ensuring min_len is between 1 and 20
+    while min_len not in range(1, 21):
+        print("Invalid input. Please enter a number from 1 to 20.")
+        try:
+            min_len = int(input("Enter minimum password length (default is 4): "))
+        except ValueError:
+            print("Please enter a valid number.")
+
+    # Ensuring max_len is between 1 and 20 and not less than min_len
+    while max_len not in range(1, 21) or max_len < min_len:
+        if max_len < min_len:
+            print("Maximum length cannot be less than minimum length.")
+        else:
+            print("Invalid input. Please enter a number from 1 to 20.")
+        try:
+            max_len = int(input("Enter maximum password length (default is 12): "))
+        except ValueError:
+            print("Please enter a valid number.")
+
+    try:
+        min_len = int(min_len)
+    except ValueError:
+        min_len = 4  # Default minimum length
+    if min_len < 1:
+        min_len = 4
+
+    try:
+        max_len = int(max_len)
+    except ValueError:
+        max_len = 12  # Default maximum length
+    if max_len < min_len:
+        max_len = min_len
 
     print("Tool is working now, it can take few minutes")
-    passwords = generate_passwords(basic_values, additional_values,len_bv, add_symbols)
+    passwords = generate_passwords(basic_values, additional_values, len_bv, add_symbols)
+
+    # Filter passwords based on length
+    passwords = {pw for pw in passwords if min_len <= len(pw) <= max_len}
 
     # Step 4: Save passwords to a text file
     with open("special_list.txt", "w") as file:
@@ -259,7 +300,7 @@ def main():
     print("For additional information about this tool send me email: 1200km@gmail.com")
 
 
-
 # Run the main function
 if __name__ == "__main__":
     main()
+
