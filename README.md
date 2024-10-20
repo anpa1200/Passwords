@@ -23,8 +23,7 @@ PPG employs a combination of standard and advanced cryptographic principles, uti
 To use the Personal Pass Generator, simply run the script in your Python environment:
 
 # Critical Information on Resource Usage
-### When utilizing the Personal Pass Generator (PPG) with all functions enabled and with a complete set of input information, the process can be extremely resource-intensive. Generating comprehensive password lists based on extensive input can
-### result in very large data volumes, potentially occupying up to 4 TB of disk space. Moreover, the generation process can be significantly time-consuming due to the complexity and size of the data being processed.
+### When utilizing the Personal Pass Generator (PPG) with all functions enabled and with a complete set of input information, the process can be extremely resource-intensive. Generating comprehensive password lists based on extensive input can result in very large data volumes, potentially occupying up to 4 TB of disk space. Moreover, the generation process can be significantly time-consuming due to the complexity and size of the data being processed.
 
 ## Recommendation for Efficient Use:
 To optimize the performance and manage the disk space efficiently, it is recommended to limit the input data to between 2 to 5 entries. This approach balances the comprehensiveness of the password lists with practical resource usage, making the tool more manageable and effective for typical penetration testing scenarios.
