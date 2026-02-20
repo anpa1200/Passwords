@@ -1,38 +1,106 @@
-# Personal Pass Generator
+# Passwords Toolkit
 
-## Description
-The Personal Pass Generator (PPG) is an advanced tool designed for security professionals and ethical hackers to create extensive, personalized lists of potential passwords. This tool is especially useful for conducting penetration tests or security assessments where custom or brute-force attacks might be necessary.
+Security testing toolkit for generating wordlists, phone number lists, and Base64-encoded credentials. Intended for **authorized penetration testing and security assessments only**.
 
-### Key Features:
-- **Extensive Password Lists**: PPG can generate password lists that are unusually large—ranging from 1GB to over 30GB—tailored to specific security testing scenarios.
-- **Customization Options**: Users can specify various parameters including the inclusion of symbols, alphanumeric characters, and more, allowing for highly customized password sets that are adapted to the target environment or system characteristics.
-- **Efficiency and Scalability**: The tool is optimized for efficient generation of large datasets while allowing users to scale the output based on their storage and processing capabilities.
+## Tools
 
-### How It Works:
-PPG employs a combination of standard and advanced cryptographic principles, utilizing permutations and combinations of characters from predefined sets (including special characters, numbers, and letters). This approach ensures that the generated passwords are both random and comprehensive, covering a wide range of possible password combinations that might be used by an individual or organization.
-
-### Applications:
-- **Security Testing**: Ideal for penetration testers and red teams needing custom password lists to test the resilience of systems to password cracking.
-- **Research and Development**: Useful for researchers studying password security and the effectiveness of password policies.
-- **Training and Workshops**: Can be used in educational settings to demonstrate the importance of strong password policies and the potential vulnerabilities of weak passwords.
+| Tool | Description |
+|------|-------------|
+| **PPG** (Personal Pass Generator) | Builds personalized password wordlists from names, dates, nicknames, etc., with 1337 and symbol variants. |
+| **phone_numbers_gen** | Generates Israeli phone number lists (configurable prefixes and digit length). |
+| **base64_matches** | Produces Base64 `username:password` lines for HTTP Basic Auth / credential testing. |
+| **generate_phone_numbers** (C++) | High-performance Israeli phone number generator (same idea as Python, faster for full runs). |
 
 ## Requirements
-- Python 3.x
+
+- **Python 3.9+** for all Python tools  
+- **C++17 compiler** (e.g. g++, clang++) only for the C++ phone generator  
+
+## Installation
+
+```bash
+# Clone and optional editable install
+git clone https://github.com/your-repo/Passwords.git
+cd Passwords
+pip install -e .
+# Optional: install dev deps for tests and linting
+pip install -e ".[dev]"
+```
 
 ## Usage
-To use the Personal Pass Generator, simply run the script in your Python environment:
 
-# Critical Information on Resource Usage
-### When utilizing the Personal Pass Generator (PPG) with all functions enabled and with a complete set of input information, the process can be extremely resource-intensive. Generating comprehensive password lists based on extensive input can result in very large data volumes, potentially occupying up to 4 TB of disk space. Moreover, the generation process can be significantly time-consuming due to the complexity and size of the data being processed.
+### PPG – Personal Pass Generator
 
-## Recommendation for Efficient Use:
-To optimize the performance and manage the disk space efficiently, it is recommended to limit the input data to between 2 to 5 entries. This approach balances the comprehensiveness of the password lists with practical resource usage, making the tool more manageable and effective for typical penetration testing scenarios.
+Generates a personalized wordlist (names, dates, symbols, 1337). **Resource note:** with many inputs and options, output can be very large (MB to GB). Prefer 2–5 meaningful entries for typical use.
 
-By focusing on a smaller set of highly relevant inputs, you can still achieve substantial password list coverage without overwhelming your system's storage and processing capabilities.
+```bash
+# Interactive (prompts for names, dates, options)
+python PPG_personal_pass_generator.py
 
+# With options
+python PPG_personal_pass_generator.py -o my_list.txt --min-length 6 --max-length 14
+```
 
+- `-o, --output` – Output file (default: `special_list.txt`)
+- `--min-length`, `--max-length` – Length filter (defaults: 4, 12)
+- `--no-interactive` – Only show defaults and exit (no generation)
 
-## Author
-Andrey Pautov - 1200km@gmail.com
-License
-This project is licensed see the LICENSE.md file for details.
+### Phone number generator (Python)
+
+```bash
+# Full Israeli list (default prefixes, 7 digits each)
+python phone_numbers_gen.py -o israeli_phone_numbers.txt
+
+# One prefix, limit count (e.g. for testing)
+python phone_numbers_gen.py -p 050 -o 050_sample.txt -n 10000
+
+# Custom prefixes
+python phone_numbers_gen.py --prefixes 050 052 054 -o mobile.txt -q
+```
+
+- `-o, --output` – Output file  
+- `-p, --prefixes` – One or more prefixes (default: Israeli mobile/VoIP set)  
+- `-d, --digits` – Digits after prefix (default: 7)  
+- `-n, --limit` – Stop after N numbers (optional)  
+- `-q, --quiet` – No progress to stderr  
+
+### Base64 credential pairs
+
+```bash
+# One username, password file
+python base64_matches.py -U admin -p passwords.txt -o matches_base64.txt
+
+# Username list × password list
+python base64_matches.py -u usernames.txt -p passwords.txt -o matches_base64.txt
+
+# Interactive (no args)
+python base64_matches.py
+```
+
+- `-U, --username` – Single username  
+- `-u, --usernames` – File with one username per line  
+- `-p, --passwords` – File with one password per line  
+- `-o, --output` – Output file (default: `matches_base64.txt`)  
+
+### C++ phone number generator
+
+```bash
+make cpp
+./generate_phone_numbers                    # writes israeli_phone_numbers.txt
+./generate_phone_numbers /path/to/out.txt   # custom output path
+```
+
+## Resource usage (PPG)
+
+With **all** options and many inputs, PPG can produce very large wordlists (up to TB range) and use significant CPU/memory. For practical use:
+
+- Prefer **2–5** high-value entries (e.g. name, birthdate, nickname).  
+- Use `--min-length` and `--max-length` to cap size and relevance.  
+- Monitor disk space when writing the output file.  
+
+## License and author
+
+- **Author:** Andrey Pautov – 1200km@gmail.com  
+- **License:** GPL-3.0-or-later (see [LICENSE](LICENSE)).  
+
+Use only in authorized security testing and in compliance with applicable laws.

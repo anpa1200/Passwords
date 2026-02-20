@@ -1,224 +1,231 @@
+#!/usr/bin/env python3
+"""
+Personal Pass Generator (PPG) - Generate personalized password wordlists for security testing.
+
+For use only in authorized penetration testing and security assessments.
+Copyright (C) Andrey Pautov - 1200km@gmail.com
+Licensed under GPL-3.0-or-later.
+"""
+
+import argparse
 import itertools
 import string
+import sys
+from pathlib import Path
 
 # Predefined list of special symbols
-basic_special_symbols = ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '_', '=', '+', '[', ']', '{', '}', '~']
+BASIC_SPECIAL_SYMBOLS = [
+    "!",
+    "@",
+    "#",
+    "$",
+    "%",
+    "^",
+    "&",
+    "*",
+    "(",
+    ")",
+    "-",
+    "_",
+    "=",
+    "+",
+    "[",
+    "]",
+    "{",
+    "}",
+    "~",
+]
 
-def cool_script_open():
-    print("""
-    ╔═════════════════════════════════════════════════════════════════════════════╗
-    ║                           PERSONAL PASS GENERATOR                           ║
-    ║                           Created by Andrey Pautov                          ║
-    ║                            Email: 1200km@gmail.com                          ║
-    ║─────────────────────────────────────────────────────────────────────────────║
-    ║   ⚠️  Please note: This tool may generate a very large password list         ║
-    ║   (ranging from 1MB to 4TB or more), depending on the input data.           ║
-    ║   The list contains many personalized password combinations, making it      ║
-    ║   a powerful tool for security professionals.                               ║
-    ║─────────────────────────────────────────────────────────────────────────────║
-    ║   🔑  What's inside:                                                        ║
-    ║   - Personalized passwords based on names, dates, nicknames, and more.      ║
-    ║   - Variations using upper/lowercase, special characters, and numbers.      ║
-    ║   - Smart combinations that strengthen the password list's complexity.      ║
-    ║─────────────────────────────────────────────────────────────────────────────║
-    ║    💡  Critical Information on Resource Usage                               ║
-    ║When utilizing the Personal Pass Generator (PPG) with all functions enabled  ║
-    ║and with a complete set of input information, the process can be extremely   ║
-    ║resource-intensive. Generating comprehensive password lists based on extensive
-    ║input can result in very large data volumes, potentially occupying up to 4 TB║ 
-    ║of disk space. Moreover, the generation process can be significantly         ║ 
-    ║time-consuming due to the complexity and size of the data being processed.   ║
-    ║Recommendation for Efficient Use:                                            ║
-    ║To optimize the performance and manage the disk space efficiently,           ║
-    ║it is recommended to limit the input data to between 2 to 5 entries. This    ║
-    ║approach balances the comprehensiveness of the password lists with practical ║
-    ║resource usage, making the tool more manageable and effective for typical    ║
-    ║penetration testing scenarios.By focusing on a smaller set of highly relevant║
-    ║inputs, you can still achieve substantial password list coverage without     ║
-    ║overwhelming your system's storage and processing capabilities.              ║
-    ╚═════════════════════════════════════════════════════════════════════════════╝
-    """)
+BANNER = """
+╔═════════════════════════════════════════════════════════════════════════════╗
+║                        PERSONAL PASS GENERATOR (PPG)                       ║
+║                        Created by Andrey Pautov                            ║
+║                         Email: 1200km@gmail.com                            ║
+║─────────────────────────────────────────────────────────────────────────────║
+║  ⚠  This tool may generate very large wordlists (1MB to 4TB+).             ║
+║  Use for authorized security testing only. Limit to 2–5 entries for        ║
+║  manageable resource usage.                                                 ║
+╚═════════════════════════════════════════════════════════════════════════════╝
+"""
 
-def generate_additional_values():
-    # Ensure basic_special_symbols is defined
-    basic_special_symbols = ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '_', '=', '+', '[', ']', '{', '}', '~']
 
-    # List to hold additional values
-    additional_values = []
-
-    # Characters pool: numbers, lowercase and uppercase letters, and special symbols
-    char_pool = list(string.digits) + list(string.ascii_lowercase) + list(string.ascii_uppercase) + basic_special_symbols
-
-    # Add each number, each lowercase/uppercase character, and each special symbol
-    additional_values.extend(char_pool)
-
-    # Generate combinations of two characters from the char pool
-    two_char_combinations = [''.join(comb) for comb in itertools.product(char_pool, repeat=2)]
-    additional_values.extend(two_char_combinations)
-
-    # Generate combinations of three characters from the char pool
-    three_char_combinations = [''.join(comb) for comb in itertools.product(char_pool, repeat=3)]
-    additional_values.extend(three_char_combinations)
-    return additional_values
-
-def to_leet_speak(basic_values):
-    # 1337 mode
-    leet_dict = {
-        'A': '4', 'a': '@','B': '8', 'c': '(', 'C': '(', 'e': '3', 'E':'3',
-        'g': '9', 'h': '#', 'i': '!', 'o': '0', 'O':'0',
-        's': '$', 't': '7', 'S':'$', 'z': '2', 'Z':2
+def _leet_speak_map() -> dict:
+    return {
+        "a": "@",
+        "b": "8",
+        "c": "(",
+        "e": "3",
+        "g": "9",
+        "h": "#",
+        "i": "!",
+        "o": "0",
+        "s": "$",
+        "t": "7",
+        "z": "2",
+        "A": "4",
+        "B": "8",
+        "C": "(",
+        "E": "3",
+        "G": "9",
+        "O": "0",
+        "S": "$",
+        "Z": "2",
     }
-    new_values = []
-    for value in basic_values:
-        new_value = ''.join(leet_dict.get(char, char) for char in value.lower())
-        new_values.append(new_value)
-    basic_values.extend(new_values)
 
-def gather_information():
-    # Helper function to add a value with different capitalizations
-    def add_variants(value, target_list):
-        if value:  # Only if the value is not empty
-            target_list.append(value.lower())             # Lowercase
-            target_list.append(value.capitalize())        # First character uppercase
-            target_list.append(value.upper())             # Uppercase
 
-    # Helper function for valid string input, allowing empty values
-    def get_optional_string(prompt):
-        return input(prompt).strip().lower()
+def to_leet_speak(values: list[str]) -> list[str]:
+    """Append 1337-style variants for each value. Modifies list in place and returns it."""
+    leet = _leet_speak_map()
+    extra = []
+    for value in values:
+        new_value = "".join(leet.get(c, c) for c in value)
+        if new_value != value:
+            extra.append(new_value)
+    values.extend(extra)
+    return values
 
-    # Helper function for valid birthdate input (in DDMMYYYY format)
-    def get_valid_birthdate(prompt):
-        while True:
-            value = input(prompt).strip().lower()
-            if len(value) == 8 and value.isdigit():
-                return value
-            elif value == "":
-                return ""  # Allow empty value for birthdate
-            else:
-                print("Invalid birthdate format. Please enter in DDMMYYYY format.")
 
-    # Helper function for valid integer input
-    def get_valid_integer(prompt, default=0):
-        while True:
-            value = input(prompt).strip()
-            if value == "":
-                return default
-            try:
-                value = int(value)
-                if value < 0:
-                    raise ValueError("The number cannot be negative.")
-                return value
-            except ValueError:
-                print("Invalid input. Please enter a valid number.")
+def generate_additional_values() -> list[str]:
+    """Build character pool and 1/2/3-char combinations for suffix/prefix variations."""
+    char_pool = (
+        list(string.digits)
+        + list(string.ascii_lowercase)
+        + list(string.ascii_uppercase)
+        + BASIC_SPECIAL_SYMBOLS
+    )
+    additional = list(char_pool)
+    for r in (2, 3):
+        for comb in itertools.product(char_pool, repeat=r):
+            additional.append("".join(comb))
+    return additional
 
-    # Gather information from the user
-    user_info = {}
 
-    # Basic personal info
+def _add_variants(value: str, target: list[str]) -> None:
+    if not value:
+        return
+    target.append(value.lower())
+    target.append(value.capitalize())
+    target.append(value.upper())
 
-    user_info['first_name'] = get_optional_string("Enter First Name (optional): ")
-    user_info['last_name'] = get_optional_string("Enter Last Name (optional): ")
-    user_info['birthdate'] = get_valid_birthdate("Enter Birthdate (DDMMYYYY, optional): ")
-    user_info['nickname'] = get_optional_string("Enter Nickname (optional): ")
-    user_info['phone_number'] = get_optional_string("Enter Phone Number (optional): ")
-    user_info['ID_number'] = get_optional_string("Enter ID Number (optional): ")
 
-    # Partner's info
-    user_info['partners_name'] = get_optional_string("Enter Partner's Name (optional): ")
-    user_info['partners_nickname'] = get_optional_string("Enter Partner's Nickname (optional): ")
-    user_info['partners_birthdate'] = get_valid_birthdate("Enter Partner's Birthdate (DDMMYYYY, optional): ")
+def _get_optional(prompt: str) -> str:
+    return input(prompt).strip().lower()
 
-    # Exception handling for number of children
-    user_info['number_of_children'] = get_valid_integer("Enter Number of Children (default is 0): ", default=0)
-    user_info['children_names'] = []
-    user_info['children_birthdates'] = []
 
-    for i in range(user_info['number_of_children']):
-        child_name = get_optional_string(f"Enter Child {i + 1} Name (optional): ")
-        child_birthdate = get_valid_birthdate(f"Enter Child {i + 1} Birthdate (DDMMYYYY, optional): ")
-        user_info['children_names'].append(child_name)
-        user_info['children_birthdates'].append(child_birthdate)
+def _get_birthdate(prompt: str) -> str:
+    while True:
+        val = input(prompt).strip().lower()
+        if not val:
+            return ""
+        if len(val) == 8 and val.isdigit():
+            return val
+        print("Invalid format. Use DDMMYYYY or leave empty.")
 
-    # Exception handling for number of pets
-    user_info['number_of_pets'] = get_valid_integer("Enter Number of Pets (default is 0): ", default=0)
-    user_info['pet_names'] = []
 
-    for i in range(user_info['number_of_pets']):
-        pet_name = get_optional_string(f"Enter Pet {i + 1} Name (optional): ")
-        user_info['pet_names'].append(pet_name)
+def _get_int(prompt: str, default: int) -> int:
+    while True:
+        val = input(prompt).strip()
+        if not val:
+            return default
+        try:
+            n = int(val)
+            if n < 0:
+                raise ValueError("Must be non-negative.")
+            return n
+        except ValueError as e:
+            print(f"Invalid input: {e}")
 
-    # Additional info
-    user_info['company_name'] = get_optional_string("Enter Company Name (optional): ")
-    user_info['profession_name'] = get_optional_string("Enter Profession Name (optional): ")
-    user_info['special_words'] = get_optional_string("Enter Special Words (optional): ")
 
-    # Create the basic_values list
+def gather_information_interactive() -> list[str]:
+    """Collect user data interactively and return a list of basic string values."""
     basic_values = []
 
-    # Add basic personal info with variants
-    add_variants(user_info['first_name'], basic_values)
-    add_variants(user_info['last_name'], basic_values)
-    if user_info['birthdate']:
-        basic_values.append(user_info['birthdate'])  # Add full birthdate
-        basic_values.append(user_info['birthdate'][4:])  # Add year YYYY
-        basic_values.append(user_info['birthdate'][:4])  # Add day and month DDMM
-    add_variants(user_info['nickname'], basic_values)
-    add_variants(user_info['phone_number'], basic_values)
-    add_variants(user_info['ID_number'], basic_values)
+    user_info = {
+        "first_name": _get_optional("Enter First Name (optional): "),
+        "last_name": _get_optional("Enter Last Name (optional): "),
+        "birthdate": _get_birthdate("Enter Birthdate (DDMMYYYY, optional): "),
+        "nickname": _get_optional("Enter Nickname (optional): "),
+        "phone_number": _get_optional("Enter Phone Number (optional): "),
+        "ID_number": _get_optional("Enter ID Number (optional): "),
+        "partners_name": _get_optional("Enter Partner's Name (optional): "),
+        "partners_nickname": _get_optional("Enter Partner's Nickname (optional): "),
+        "partners_birthdate": _get_birthdate("Enter Partner's Birthdate (DDMMYYYY, optional): "),
+    }
 
-    # Add partner's info with variants
-    add_variants(user_info['partners_name'], basic_values)
-    add_variants(user_info['partners_nickname'], basic_values)
-    if user_info['partners_birthdate']:
-        basic_values.append(user_info['partners_birthdate'])
-        basic_values.append(user_info['partners_birthdate'][4:])
-        basic_values.append(user_info['partners_birthdate'][:4])
+    for key in (
+        "first_name",
+        "last_name",
+        "nickname",
+        "phone_number",
+        "ID_number",
+        "partners_name",
+        "partners_nickname",
+    ):
+        _add_variants(user_info[key], basic_values)
 
-    # Add children's info with variants
-    for name in user_info['children_names']:
-        add_variants(name, basic_values)
-    for birthdate in user_info['children_birthdates']:
-        add_variants(birthdate, basic_values)
+    for key in ("birthdate", "partners_birthdate"):
+        b = user_info[key]
+        if b:
+            basic_values.append(b)
+            basic_values.append(b[4:])  # YYYY
+            basic_values.append(b[:4])  # DDMM
 
-    # Add pet's info with variants
-    for pet_name in user_info['pet_names']:
-        add_variants(pet_name, basic_values)
+    num_children = _get_int("Enter Number of Children (default 0): ", 0)
+    for i in range(num_children):
+        _add_variants(_get_optional(f"Enter Child {i + 1} Name (optional): "), basic_values)
+        b = _get_birthdate(f"Enter Child {i + 1} Birthdate (DDMMYYYY, optional): ")
+        if b:
+            basic_values.append(b)
+            basic_values.append(b[4:])
+            basic_values.append(b[:4])
 
-    # Add additional info with variants
-    add_variants(user_info['company_name'], basic_values)
-    add_variants(user_info['profession_name'], basic_values)
-    add_variants(user_info['special_words'], basic_values)
+    num_pets = _get_int("Enter Number of Pets (default 0): ", 0)
+    for i in range(num_pets):
+        _add_variants(_get_optional(f"Enter Pet {i + 1} Name (optional): "), basic_values)
 
-    return basic_values
+    _add_variants(_get_optional("Enter Company Name (optional): "), basic_values)
+    _add_variants(_get_optional("Enter Profession (optional): "), basic_values)
+    _add_variants(_get_optional("Enter Special Words (optional): "), basic_values)
+
+    # Deduplicate while preserving order
+    seen = set()
+    unique = []
+    for v in basic_values:
+        if v and v not in seen:
+            seen.add(v)
+            unique.append(v)
+    return unique
 
 
-def generate_passwords(basic_values, additional_values, len_bv, add_symbols):
-    passwords = set()  # Use a set to ensure unique passwords
+def generate_passwords(
+    basic_values: list[str],
+    additional_values: list[str],
+    add_symbols: bool,
+    min_len: int,
+    max_len: int,
+) -> set[str]:
+    """Generate password set from basic and additional value lists."""
+    passwords = set()
 
-    # 1. Add each value from basic_values to the passwords list
     for bval in basic_values:
-        passwords.add(bval)
+        if bval:
+            passwords.add(bval)
 
-    if add_symbols == "y":
-        # Iterate over each combination of additional_values (addval) and basic_values (bval)
+    if add_symbols:
         for bval in basic_values:
+            if not bval:
+                continue
             for addval in additional_values:
-                # Combination: addval + bval
                 passwords.add(f"{addval}{bval}")
-                # Combination: bval + addval
                 passwords.add(f"{bval}{addval}")
-                # Combination: addval + bval + addval
                 passwords.add(f"{addval}{bval}{addval}")
 
-        # More combinations with multiple basic values if the list is long enough
-        if len_bv > 3:
-            for i, bval1 in enumerate(basic_values):
-                for j, bval2 in enumerate(basic_values):
-                    if bval1 != bval2:
-                        # Combination: bval1 + bval2
+        if len(basic_values) > 3:
+            for bval1 in basic_values:
+                for bval2 in basic_values:
+                    if bval1 != bval2 and bval1 and bval2:
                         passwords.add(f"{bval1}{bval2}")
                         for addval in additional_values:
-                            # Combination involving addvals around and between bvals
                             passwords.add(f"{addval}{bval1}{bval2}")
                             passwords.add(f"{addval}{bval1}{bval2}{addval}")
                             passwords.add(f"{bval1}{bval2}{addval}")
@@ -226,94 +233,99 @@ def generate_passwords(basic_values, additional_values, len_bv, add_symbols):
                             passwords.add(f"{bval1}{addval}{bval2}{addval}")
                             passwords.add(f"{bval1}{addval}{bval2}")
                             passwords.add(f"{addval}{bval1}{addval}{bval2}")
-
-    elif add_symbols == "n":
-        # Combinations only with basic_values
-        if len_bv > 3:
-            for i, bval1 in enumerate(basic_values):
-                for j, bval2 in enumerate(basic_values):
-                    if bval1 != bval2:
-                        # Combination: bval1 + bval2
+    else:
+        if len(basic_values) > 3:
+            for bval1 in basic_values:
+                for bval2 in basic_values:
+                    if bval1 != bval2 and bval1 and bval2:
                         passwords.add(f"{bval1}{bval2}")
 
-    return passwords
+    return {pw for pw in passwords if min_len <= len(pw) <= max_len}
 
 
-def main():
-    # Step 1: Generate additional values (predefined and character combinations)
+def run_interactive(output_path: Path, min_len: int, max_len: int) -> None:
+    """Interactive flow: banner, options, gather info, generate, save."""
+    print(BANNER)
+
+    mode1337 = input("Enable 1337 (leet) mode? [y/N]: ").strip().lower() or "n"
+    while mode1337 not in ("y", "n"):
+        mode1337 = input("Enter 'y' or 'n': ").strip().lower()
+
+    basic_values = gather_information_interactive()
+    if not basic_values:
+        print("No input data. Add at least one name, date, or word.")
+        sys.exit(1)
+
+    if mode1337 == "y":
+        to_leet_speak(basic_values)
+
+    add_symbols = input("Add symbols (e.g. @pass#)? [y/N]: ").strip().lower() or "n"
+    while add_symbols not in ("y", "n"):
+        add_symbols = input("Enter 'y' or 'n': ").strip().lower()
+
+    print("Generating... (this may take a few minutes)")
     additional_values = generate_additional_values()
-    cool_script_open()
-    mode1337 = input("Enable 1337 Leet mode? y/n: ").lower()
-    while mode1337 not in ['y', 'n']:
-        print("Invalid input. Please enter 'y' for yes or 'n' for no.")
-        mode1337 = input("Enable 1337 Leet mode? y/n: ").lower()
+    passwords = generate_passwords(
+        basic_values,
+        additional_values,
+        add_symbols=(add_symbols == "y"),
+        min_len=min_len,
+        max_len=max_len,
+    )
 
-    # Step 2: Gather basic values from user input
-    basic_values = gather_information()
-    len_bv = len(basic_values)
+    with output_path.open("w", encoding="utf-8") as f:
+        for pw in sorted(passwords):
+            f.write(pw + "\n")
 
-    # Step 3: Generate passwords based on the basic and additional values
-    add_symbols = input("Do you want to add additional symbols, like @pass#? y/n: ").lower()
-    while add_symbols not in ['y', 'n']:
-        print("Invalid input. Please enter 'y' for yes or 'n' for no.")
-        add_symbols = input("Do you want to add additional symbols, like @pass#? y/n: ").lower()
+    print(f"Saved {len(passwords)} passwords to {output_path}")
+    print("Generated with PPG - Personal Pass Generator | 1200km@gmail.com")
 
-    # New Step: Set password length limits
-    min_len = int(input("Enter minimum password length (default is 4): "))
-    max_len = int(input("Enter maximum password length (default is 12): "))
 
-    # Ensuring min_len is between 1 and 20
-    while min_len not in range(1, 21):
-        print("Invalid input. Please enter a number from 1 to 20.")
-        try:
-            min_len = int(input("Enter minimum password length (default is 4): "))
-        except ValueError:
-            print("Please enter a valid number.")
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Personal Pass Generator (PPG) - personalized wordlists for security testing.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        default=Path("special_list.txt"),
+        help="Output wordlist file path",
+    )
+    parser.add_argument(
+        "--min-length",
+        type=int,
+        default=4,
+        metavar="N",
+        help="Minimum password length (1–20)",
+    )
+    parser.add_argument(
+        "--max-length",
+        type=int,
+        default=12,
+        metavar="N",
+        help="Maximum password length (1–20)",
+    )
+    parser.add_argument(
+        "--no-interactive",
+        action="store_true",
+        help="Skip interactive run; only validate and show defaults (use with interactive run for generation)",
+    )
+    args = parser.parse_args()
 
-    # Ensuring max_len is between 1 and 20 and not less than min_len
-    while max_len not in range(1, 21) or max_len < min_len:
-        if max_len < min_len:
-            print("Maximum length cannot be less than minimum length.")
-        else:
-            print("Invalid input. Please enter a number from 1 to 20.")
-        try:
-            max_len = int(input("Enter maximum password length (default is 12): "))
-        except ValueError:
-            print("Please enter a valid number.")
-
-    try:
-        min_len = int(min_len)
-    except ValueError:
-        min_len = 4  # Default minimum length
-    if min_len < 1:
-        min_len = 4
-
-    try:
-        max_len = int(max_len)
-    except ValueError:
-        max_len = 12  # Default maximum length
+    min_len = max(1, min(20, args.min_length))
+    max_len = max(1, min(20, args.max_length))
     if max_len < min_len:
         max_len = min_len
 
-    print("Tool is working now, it can take few minutes")
-    passwords = generate_passwords(basic_values, additional_values, len_bv, add_symbols)
+    if args.no_interactive:
+        print("Min length:", min_len, "Max length:", max_len, "Output:", args.output)
+        print("Run without --no-interactive to generate wordlists.")
+        return
 
-    # Filter passwords based on length
-    passwords = {pw for pw in passwords if min_len <= len(pw) <= max_len}
-
-    # Step 4: Save passwords to a text file
-    with open("special_list.txt", "w") as file:
-        for password in passwords:
-            file.write(f"{password}\n")
-
-    print("\nPasswords generated and saved successfully in 'special_list.txt'")
-    print(f"Generated {len(passwords)} passwords.")
-    print("________________________________________________________________________")
-    print("Generated with PPG - personal pass generator ")
-    print("For additional information about this tool send me email: 1200km@gmail.com")
+    run_interactive(args.output, min_len, max_len)
 
 
-# Run the main function
 if __name__ == "__main__":
     main()
-
