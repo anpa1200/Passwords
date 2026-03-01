@@ -1,6 +1,6 @@
 # Passwords Toolkit
 
-Security testing toolkit for generating wordlists, phone number lists, and Base64-encoded credentials. Intended for **authorized penetration testing and security assessments only**.
+**Security testing toolkit: personalized password wordlists (PPG), phone number generators, and Base64 credential pairs for authorized pentesting.**
 
 ---
 
