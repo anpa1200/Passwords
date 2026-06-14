@@ -2,6 +2,9 @@
 
 **Security testing toolkit: personalized password wordlists (PPG), phone number generators, and Base64 credential pairs for authorized pentesting.**
 
+> PPG now has a focused standalone repository with a scriptable CLI, dedicated
+> documentation, tests, and CI: [Personal Pass Generator](https://github.com/anpa1200/personal-pass-generator).
+
 ---
 
 ## Overview
