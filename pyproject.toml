@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "passwords-toolkit"
 version = "1.0.0"
-description = "Security testing toolkit: personal password generator, phone number generator, and base64 credential encoder."
+description = "Security testing toolkit: personalized password wordlists (PPG), phone number generators, and Base64 credential pairs for authorized pentesting."
 readme = "README.md"
 license = { text = "GPL-3.0-or-later" }
 authors = [{ name = "Andrey Pautov", email = "1200km@gmail.com" }]
